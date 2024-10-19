@@ -6,13 +6,19 @@ model:
   kernels:
     - 3
     - 3
+    - 3
+    - 3
   strides:
+    - 2
+    - 2
     - 2
     - 2
   channels:
     - 32
     - 32
-  hidden_size: 16
+    - 32
+    - 32
+  hidden_size: 32
   activation:
     _target_: torch.nn.ReLU
 
@@ -25,7 +31,7 @@ train_dataloader:
   shuffle: True
   dataset:
     _target_: src.data.SpotterDataset
-    manifest_path: ???
+    manifest_path: ./keyword-spotting-mipt-2023/train/manifest_train.csv
     idx_to_keyword:
     - 'sber'
     - 'joy'
@@ -50,7 +56,7 @@ val_dataloader:
   shuffle: False
   dataset:
     _target_: src.data.SpotterDataset
-    manifest_path: ???
+    manifest_path: ./keyword-spotting-mipt-2023/train/manifest_val.csv
     idx_to_keyword: ${train_dataloader.dataset.idx_to_keyword}
     transforms:
       - ${getindex:${train_dataloader.dataset.transforms}, 0}
@@ -65,7 +71,7 @@ predict_dataloader:
   shuffle: False
   dataset:
     _target_: ${val_dataloader.dataset._target_}
-    manifest_path: ???
+    manifest_path: ./keyword-spotting-mipt-2023/test/manifest.csv
     idx_to_keyword: ${val_dataloader.dataset.idx_to_keyword}
     transforms: ${val_dataloader.dataset.transforms}
     test: True
@@ -81,6 +87,13 @@ trainer:
   accelerator: auto
   max_steps: 8000
   devices: 1
+  callbacks:
+    - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+      monitor: "val_loss"
+      mode: "min"
+      save_top_k: 3
+      every_n_epochs: 1
+      save_last: True
 
 logger:
   _target_: pytorch_lightning.loggers.TensorBoardLogger
@@ -89,3 +102,8 @@ logger:
 optim:
   _target_: torch.optim.Adam
   lr: 1e-3
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  optimizer: ${optim}
+  T_max: 10

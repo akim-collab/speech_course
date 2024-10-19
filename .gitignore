@@ -5,3 +5,6 @@ outputs
 .DS_Store
 submit.csv
 .ipynb_checkpoints
+week03/kws/keyword-spotting-mipt-2023.zip
+.idea/
+week03/kws/keyword-spotting-mipt-2023/
