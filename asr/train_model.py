@@ -25,6 +25,11 @@ def resolve_model_class(model_class_name: str):
 def main(conf: omegaconf.DictConfig) -> None:
     model = resolve_model_class(conf.model.model_class)(conf)
 
+    if sum(p.numel() for p in model.parameters()) == 11266850:
+        print(f"model.parameters: {sum(p.numel() for p in model.parameters())}")
+    else:
+        raise ValueError(f"Don't match count of params: {sum(p.numel() for p in model.parameters())}")
+
     if conf.get("init_weights", False):
         ckpt = torch.load(conf.init_weights, map_location="cpu")
         model.load_state_dict(ckpt["state_dict"])
